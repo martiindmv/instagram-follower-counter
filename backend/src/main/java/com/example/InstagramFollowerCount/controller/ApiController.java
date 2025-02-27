@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,11 +44,11 @@ public class ApiController {
         }
         return ResponseEntity.ok().body(following.toString());
     }
-    
+
     @GetMapping("/not-following-back")
     public ResponseEntity<Map<String, Object>> getNotFollowingBack() {
         Set<String> notFollowingBack = instagramUserComparator.getNotFollowingBack();
-        
+
         Map<String, Object> response = new HashMap<>();
         if (notFollowingBack != null) {
             response.put("difference", notFollowingBack);
@@ -56,7 +57,46 @@ public class ApiController {
             response.put("difference", Set.of());
             response.put("count", 0);
         }
-        
+
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/account-stats")
+    public ResponseEntity<Map<String, Object>> getAccountStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Get data from userRelationshipData
+        JSONArray followersArray = userRelationshipData.getWhoFollowsYouArray();
+        JSONArray followingArray = userRelationshipData.getWhoYouAreFollowingArray();
+        Set<String> notFollowingBack = instagramUserComparator.getNotFollowingBack();
+
+        // Get counts
+        int followersCount = followersArray != null ? followersArray.length() : 0;
+        int followingCount = followingArray != null ? followingArray.length() : 0;
+        int notFollowingBackCount = notFollowingBack != null ? notFollowingBack.size() : 0;
+
+        // Calculate followers you don't follow back (optional additional stat)
+        Set<String> followersSet = new HashSet<>();
+        Set<String> followingSet = new HashSet<>();
+
+        if (followersArray != null) {
+            followersSet = instagramUserComparator.extractUsernamesFromJsonArray(followersArray);
+        }
+
+        if (followingArray != null) {
+            followingSet = instagramUserComparator.extractUsernamesFromJsonArray(followingArray);
+        }
+
+        // People who follow you but you don't follow them
+        Set<String> followersNotFollowed = new HashSet<>(followersSet);
+        followersNotFollowed.removeAll(followingSet);
+
+        // Compile stats
+        stats.put("followers", followersCount);
+        stats.put("following", followingCount);
+        stats.put("notFollowingBack", notFollowingBackCount);
+        stats.put("followersNotFollowed", followersNotFollowed.size());
+
+        return ResponseEntity.ok().body(stats);
     }
 }

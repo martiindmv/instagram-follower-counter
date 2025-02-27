@@ -4,14 +4,17 @@ import Header from './components/Header';
 import FileUpload from './components/FileUpload';
 import InstagramTable from './components/InstagramTable';
 import JsonUpload from './components/JsonUpload';
-import { getNonFollowingUsers } from './services/api';
+import InstagramDashboard from './components/InstagramDashboard';
+import { getNonFollowingUsers, getAccountStats } from './services/api';
 
 function App() {
   const [nonFollowingUsers, setNonFollowingUsers] = useState([]);
+  const [accountStats, setAccountStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState('');
   
+  // Fetch data when component mounts
   useEffect(() => {
     fetchData();
   }, []);
@@ -19,14 +22,23 @@ function App() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await getNonFollowingUsers();
-      console.log('API Response:', response); // Debug response
       
-      if (response && response.difference) {
-        setNonFollowingUsers(response.difference);
-      } else {
-        console.warn('API response missing expected data format:', response);
+      // Fetch non-following users
+      const usersResponse = await getNonFollowingUsers();
+      console.log('Non-following users API response:', usersResponse);
+      
+      if (usersResponse && usersResponse.difference) {
+        setNonFollowingUsers(usersResponse.difference);
       }
+      
+      // Fetch account statistics
+      const statsResponse = await getAccountStats();
+      console.log('Account stats API response:', statsResponse);
+      
+      if (statsResponse) {
+        setAccountStats(statsResponse);
+      }
+      
       setError(null);
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -40,10 +52,12 @@ function App() {
     setMessage('Processing your data...');
     setLoading(true);
     
+    // Wait briefly then fetch updated results
     setTimeout(() => {
       fetchData();
       setMessage('Analysis complete!');
       
+      // Clear success message after 3 seconds
       setTimeout(() => {
         setMessage('');
       }, 3000);
@@ -54,6 +68,7 @@ function App() {
     setError(errorMsg);
     setLoading(false);
     
+    // Clear error message after 5 seconds
     setTimeout(() => {
       setError('');
     }, 5000);
@@ -97,7 +112,10 @@ function App() {
           <p>Processing your Instagram data...</p>
         </div>
       ) : (
-        <InstagramTable nonFollowingUsers={nonFollowingUsers} />
+        <>
+          <InstagramDashboard stats={accountStats} />
+          <InstagramTable nonFollowingUsers={nonFollowingUsers} />
+        </>
       )}
     </div>
   );

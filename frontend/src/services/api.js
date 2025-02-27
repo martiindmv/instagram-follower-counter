@@ -20,6 +20,17 @@ export const getNonFollowingUsers = async () => {
   }
 };
 
+// Get account statistics
+export const getAccountStats = async () => {
+  try {
+    const response = await api.get('/api/account-stats');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching account statistics:', error);
+    throw error;
+  }
+};
+
 // Upload followers file
 export const uploadFollowersFile = async (file) => {
   const formData = new FormData();
@@ -72,6 +83,7 @@ export const uploadJsonText = async (jsonFollowers, jsonFollowing) => {
 
 export default {
   getNonFollowingUsers,
+  getAccountStats,
   uploadFollowersFile,
   uploadFollowingFile,
   uploadJsonText
