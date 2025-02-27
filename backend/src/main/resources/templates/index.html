@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Instagram Follower Count</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        h1 {
+            text-align: center;
+            font-size: 2em; /* Change the font size */
+            font-weight: bold; /* Make the font bold */
+        }
+        div {
+            text-align: center;
+        }
+        .rcontent {
+            background-color: #000000;
+        }
+    </style>
+</head>
+<body>
+<h1>Instagram Follower Count</h1>
+<div class="content">
+    <form action="/getUsername" method="get">
+        <label for="username">Enter Instagram Username:</label>
+        <input type="text" id="username" name="username">
+        <button type="submit">Get Username</button>
+    </form>
+</div>
+<div class="row">
+    <div class="col text-center">
+            <form id="uploadFollowers" th:action="@{/uploadFollowers}" method="post" enctype="multipart/form-data">
+                <input type="file" id="followers" name="followers" style="display: none;" onchange="document.getElementById('uploadFollowers').submit(); document.getElementById('followersName').textContent = this.files[0].name">
+                <button type="button" onclick="document.getElementById('followers').click()">Upload your Instagram Followers</button>
+                <span id="followersName"></span>
+            </form>
+    </div>
+    <div class="col text-center">
+        <form id="uploadFollowing" th:action="@{/uploadFollowing}" method="post" enctype="multipart/form-data">
+            <input type="file" id="following" name="following" style="display: none;" onchange="document.getElementById('uploadFollowing').submit(); document.getElementById('followingName').textContent = this.files[0].name">
+            <button type="button" onclick="document.getElementById('following').click()">Upload your Instagram Following</button>
+            <span id="followingName"></span>
+        </form>
+    </div>
+</div>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="user, stat : ${difference}">
+        <th scope="row" th:text="${stat.count}"></th>
+        <td th:text="${user}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
